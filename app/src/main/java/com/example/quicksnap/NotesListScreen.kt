@@ -44,9 +44,9 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (String) -> Unit) {
-    val notes by viewModel.notes.collectAsState()
-    var newNote by remember { mutableStateOf("") }
+fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
+    val notes by viewModel.notes.collectAsState(initial = emptyList())
+    var newNoteContent by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -66,9 +66,9 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (String) -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (newNote.isNotBlank()) {
-                        viewModel.addNote(newNote)
-                        newNote = ""
+                    if (newNoteContent.isNotBlank()) {
+                        viewModel.addNote(newNoteContent)
+                        newNoteContent = ""
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.primary
@@ -88,18 +88,17 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (String) -> Unit) {
                 .padding(16.dp)
         ) {
             OutlinedTextField(
-                value = newNote,
-                onValueChange = { newNote = it },
+                value = newNoteContent,
+                onValueChange = { newNoteContent = it },
                 label = { Text("Add a note") },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (newNote.isNotBlank()) {
-                            viewModel.addNote(newNote)
-                            newNote = ""
+                        if (newNoteContent.isNotBlank()) {
+                            viewModel.addNote(newNoteContent)
+                            newNoteContent = ""
                         }
                     }
                 )
@@ -119,7 +118,7 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (String) -> Unit) {
 }
 
 @Composable
-fun NoteItem(note: String, onClick: () -> Unit, onDelete: () -> Unit) {
+fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
     val cardShape = RoundedCornerShape(16.dp)
     Surface(
         modifier = Modifier
@@ -139,7 +138,7 @@ fun NoteItem(note: String, onClick: () -> Unit, onDelete: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                NotePreview(note = note, modifier = Modifier.weight(1f))
+                NotePreview(note = note.content, modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Note",
@@ -155,8 +154,12 @@ fun NoteItem(note: String, onClick: () -> Unit, onDelete: () -> Unit) {
 
 @Composable
 fun NotePreview(note: String, modifier: Modifier = Modifier) {
-    val (title, body) = note.split(" ").let { words ->
-        words.take(2).joinToString(" ") to words.drop(2).joinToString(" ")
+    val (title, body) = if(note.isNotEmpty()){
+         note.split(" ", limit = 3).let { words ->
+            words.take(2).joinToString(" ") to words.drop(2).joinToString(" ")
+        }
+    }else{
+         "" to ""
     }
 
     Column(modifier = modifier) {

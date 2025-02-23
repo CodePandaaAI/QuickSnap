@@ -1,24 +1,32 @@
 package com.example.quicksnap
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-class NotesViewModel : ViewModel() {
-    private val _notes = MutableStateFlow<List<String>>(emptyList())
-    val notes = _notes.asStateFlow()
+class NotesViewModel(application: Application) : AndroidViewModel(application) {
+    private val database = AppDatabase.getDatabase(application)
+    private val noteDao = database.noteDao()
 
-    fun addNote(note: String) {
-        if (note.isNotBlank()) {
-            _notes.value += note
+    val notes = noteDao.getAllNotes()
+
+    fun addNote(content: String) {
+        viewModelScope.launch {
+            noteDao.insert(Note(content = content))
         }
     }
 
-    fun deleteNote(note: String) {
-        _notes.value -= note
+    fun updateNote(note: Note, newContent: String) {
+        viewModelScope.launch {
+            val updatedNote = note.copy(content = newContent)
+            noteDao.update(updatedNote)
+        }
     }
 
-    fun updateNote(oldNote: String, newNote: String) {
-        _notes.value = _notes.value.map { if (it == oldNote) newNote else it }
+    fun deleteNote(note: Note) {
+        viewModelScope.launch {
+            noteDao.delete(note)
+        }
     }
 }

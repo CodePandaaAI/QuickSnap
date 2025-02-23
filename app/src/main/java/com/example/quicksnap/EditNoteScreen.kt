@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditNoteScreen(originalNote: String, onSave: (String) -> Unit) {
-    var editedNote by remember { mutableStateOf(originalNote) }
+fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
+    var editedNote by remember { mutableStateOf(note.content) }
 
     Scaffold(
         topBar = {
