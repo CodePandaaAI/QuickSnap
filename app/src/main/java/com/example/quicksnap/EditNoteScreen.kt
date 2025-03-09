@@ -40,25 +40,31 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
-    var editedNote by remember { mutableStateOf(note.content) }
+    // 1. Use a more descriptive variable name.
+    var currentNoteContent by remember { mutableStateOf(note.content) }
 
     Scaffold(
         topBar = {
-            TopAppBar(expandedHeight = 80.dp,
+            TopAppBar(
+                // 2. Use smaller size, not recommended to expand TopAppBar
+                // expandedHeight = 80.dp,
                 title = {
-                    Row(modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Image(
                             painter = painterResource(R.drawable.ic_snap),
                             contentDescription = "QuickSnap",
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(40.dp) //3. Reduce the size to have a good looking AppBar
                                 .clip(CircleShape),
                         )
                         Column(modifier = Modifier.padding(start = 8.dp)) {
                             Text(
-                                "Edit Screen",
-                                style = MaterialTheme.typography.titleLarge,
+                                // 4. Clear name for a screen
+                                text = "Edit Note",
+                                style = MaterialTheme.typography.titleMedium, // 5. Use titleMedium, looks better in topAppBar
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
                             )
@@ -72,7 +78,7 @@ fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onSave(editedNote) },
+                onClick = { onSave(currentNoteContent) },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -91,18 +97,17 @@ fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
         ) {
             Column {
                 OutlinedTextField(
-                    value = editedNote,
-                    onValueChange = { editedNote = it },
+                    value = currentNoteContent,
+                    onValueChange = { currentNoteContent = it },
                     shape = RoundedCornerShape(16.dp),
                     label = { Text("Edit your note") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         capitalization = KeyboardCapitalization.Sentences,
-
                     ),
                     keyboardActions = KeyboardActions(
-                        onDone = { onSave(editedNote) }
+                        onDone = { onSave(currentNoteContent) }
                     )
                 )
             }

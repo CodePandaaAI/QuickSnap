@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,55 +51,79 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun QuickSnapTopAppBar(
+    modifier: Modifier = Modifier, // Add a modifier parameter for flexibility
+    title: String = stringResource(R.string.app_name)
+) {
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ic_snap),
+                    contentDescription = stringResource(R.string.quick_snap_logo_description),
+                    modifier = Modifier
+                        .size(40.dp) // Adjusted size
+                        .clip(CircleShape),
+                )
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.mediumTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),modifier = modifier // Use the passed modifier
+    )
+}
+
+@Composable
+fun AddNoteFloatingActionButton(
+    newNoteInputText: String,
+    onNewNoteInputTextChanged: (String) -> Unit,
+    onAddNote: (String) -> Unit
+) {
+    FloatingActionButton(
+        onClick = {
+            if (newNoteInputText.isNotBlank()) {
+                onAddNote(newNoteInputText)
+                onNewNoteInputTextChanged("")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.primary,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
+    ) {
+        Icon(
+            Icons.Default.Edit,
+            contentDescription = "Add Note",
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
-    var newNoteContent by remember { mutableStateOf("") }
+    var newNoteInputText by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
-            TopAppBar(expandedHeight = 80.dp,
-                title = {
-                    Row(modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_snap),
-                            contentDescription = "QuickSnap",
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape),
-                        )
-                        Column(modifier = Modifier.padding(start = 8.dp)) {
-                            Text(
-                                "QuickSnap",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            )
+            QuickSnapTopAppBar()
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (newNoteContent.isNotBlank()) {
-                        viewModel.addNote(newNoteContent)
-                        newNoteContent = ""
-                    }
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
-            ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Add Note",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+            AddNoteFloatingActionButton(
+                newNoteInputText = newNoteInputText,
+                onNewNoteInputTextChanged = { newNoteInputText = it },
+                onAddNote = viewModel::addNote
+            )
         }
     ) { innerPadding ->
         Column(
@@ -108,17 +133,17 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
                 .padding(16.dp)
         ) {
             OutlinedTextField(
-                value = newNoteContent,
-                onValueChange = { newNoteContent = it },
+                value = newNoteInputText,
+                onValueChange = { newNoteInputText = it },
                 label = { Text("Add a note") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (newNoteContent.isNotBlank()) {
-                            viewModel.addNote(newNoteContent)
-                            newNoteContent = ""
+                        if (newNoteInputText.isNotBlank()) {
+                            viewModel.addNote(newNoteInputText)
+                            newNoteInputText = ""
                         }
                     }
                 )
@@ -155,33 +180,42 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
 
 
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
+fun NoteItem(
+    note: Note,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier // Added a default modifier parameter
+) {
+    // Use a constant for the shape to avoid recalculating it on every recomposition.
     val cardShape = RoundedCornerShape(16.dp)
+
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable { onClick() }
+            .clickable(onClick = onClick) // Trailing lambda for readability
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
                 shape = cardShape
             ),
         color = MaterialTheme.colorScheme.surfaceVariant,
-
         shape = cardShape
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-               Row(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                NotePreview(note = note.content, modifier = Modifier.weight(1f))
+                NotePreview(
+                    note = note.content,
+                    modifier = Modifier.weight(1f)
+                )
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Note",
                     modifier = Modifier
-                        .clickable { onDelete() }
+                        .clickable(onClick = onDelete) // Trailing lambda for readability
                         .padding(8.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -190,23 +224,16 @@ fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
     }
 }
 
-
 @Composable
 fun NotePreview(note: String, modifier: Modifier = Modifier) {
-    val (title, body) = if(note.isNotEmpty()){
-         note.split(" ", limit = 3).let { words ->
-            words.take(2).joinToString(" ") to words.drop(2).joinToString(" ")
-        }
-    }else{
-         "" to ""
-    }
+    val (title, body) = extractTitleAndBody(note)
 
     Column(modifier = modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             maxLines = 1,
-           overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Ellipsis,
             color = MaterialTheme.colorScheme.onSurface
         )
 
@@ -220,5 +247,18 @@ fun NotePreview(note: String, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private fun extractTitleAndBody(note: String): Pair<String, String> {
+    if (note.isEmpty()) {
+        return "" to ""
+    }
+
+    val parts = note.split(" ", limit = 3)
+    return when (parts.size) {
+        1 -> parts[0] to ""
+        2 -> parts.joinToString(" ") to ""
+        else -> parts.take(2).joinToString(" ") to parts.drop(2).joinToString(" ")
     }
 }
