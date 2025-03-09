@@ -1,17 +1,17 @@
 [versions]
 accompanistSystemuicontroller = "0.34.0"
-agp = "8.8.1"
+agp = "8.9.0"
 daggerCompilerVersion = "2.54"
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.0"
+activityCompose = "1.10.1"
 composeBom = "2025.02.00"
-navigationCommonAndroid = "2.9.0-alpha06"
-navigationCompose = "2.8.7"
+navigationCommonAndroid = "2.9.0-alpha07"
+navigationCompose = "2.8.8"
 roomRuntime = "2.6.1"
 
 [libraries]
