@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -114,7 +116,7 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     var newNoteInputText by remember { mutableStateOf("") }
 
-    Scaffold(
+    Scaffold(contentWindowInsets = WindowInsets.safeContent,
         topBar = {
             QuickSnapTopAppBar()
         },
@@ -178,7 +180,6 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
     }
 }
 
-
 @Composable
 fun NoteItem(
     note: Note,
@@ -199,7 +200,7 @@ fun NoteItem(
                 color = MaterialTheme.colorScheme.outline,
                 shape = cardShape
             ),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.background,
         shape = cardShape
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

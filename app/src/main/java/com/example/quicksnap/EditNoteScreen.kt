@@ -4,9 +4,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +45,7 @@ fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
     // 1. Use a more descriptive variable name.
     var currentNoteContent by remember { mutableStateOf(note.content) }
 
-    Scaffold(
+    Scaffold(contentWindowInsets = WindowInsets.safeContent,
         topBar = {
             TopAppBar(
                 // 2. Use smaller size, not recommended to expand TopAppBar
@@ -64,9 +66,9 @@ fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
                             Text(
                                 // 4. Clear name for a screen
                                 text = "Edit Note",
-                                style = MaterialTheme.typography.titleMedium, // 5. Use titleMedium, looks better in topAppBar
+                                style = MaterialTheme.typography.titleLarge, // 5. Use titleMedium, looks better in topAppBar
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
