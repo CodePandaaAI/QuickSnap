@@ -1,8 +1,11 @@
 package com.example.quicksnap
 
+import android.app.Activity
+import android.content.Context
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,14 +26,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,6 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,20 +58,33 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
+private fun exitApp(context: Context) {
+    (context as? Activity)?.finishAffinity()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickSnapTopAppBar(
     modifier: Modifier = Modifier, // Add a modifier parameter for flexibility
     title: String = stringResource(R.string.app_name)
 ) {
+    val context = LocalContext.current
+
+    BackHandler {
+        exitApp(context)
+    }
     TopAppBar(
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = {exitApp(context)}) {
+                    Icon(painterResource(R.drawable.baseline_arrow_back_24),
+                        contentDescription = "Back button")
+                }
                 Image(
-                    painter = painterResource(R.drawable.ic_snap),
+                    painter = painterResource(R.drawable.ic_notes),
                     contentDescription = stringResource(R.string.quick_snap_logo_description),
                     modifier = Modifier
                         .size(40.dp) // Adjusted size
@@ -81,7 +102,7 @@ fun QuickSnapTopAppBar(
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),modifier = modifier // Use the passed modifier
+        ), modifier = modifier // Use the passed modifier
     )
 }
 
@@ -115,7 +136,8 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     var newNoteInputText by remember { mutableStateOf("") }
 
-    Scaffold(contentWindowInsets = WindowInsets.safeContent,
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeContent,
         topBar = {
             QuickSnapTopAppBar()
         },
@@ -159,7 +181,9 @@ fun NotesListScreen(viewModel: NotesViewModel, onNoteClick: (Note) -> Unit) {
                     Image(
                         painter = painterResource(id = R.drawable.empty_note),
                         contentDescription = "Creepy Empty Note",
-                        modifier = Modifier.clip(CircleShape).size(250.dp)
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(250.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("No notes yet... Start adding some!")
@@ -184,46 +208,63 @@ fun NoteItem(
     note: Note,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier // Added a default modifier parameter
+    modifier: Modifier = Modifier
 ) {
-    // Use a constant for the shape to avoid recalculating it on every recomposition.
-    val cardShape = RoundedCornerShape(16.dp)
+    val isDarkTheme = isSystemInDarkTheme()
+    val cardShape = RoundedCornerShape(12.dp)
+    val cardBackgroundColor = MaterialTheme.colorScheme.surface
+    val borderColor = if (isDarkTheme) {
+        MaterialTheme.colorScheme.surfaceVariant // Darker border in dark mode
+    } else {
+        Color.LightGray // Lighter border in light mode
+    }
 
-    Surface(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clickable(onClick = onClick) // Trailing lambda for readability
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = cardShape
-            ),
-        color = MaterialTheme.colorScheme.background,
-        shape = cardShape
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        shape = cardShape,
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
+        border = BorderStroke(1.dp, borderColor)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 NotePreview(
                     note = note.content,
                     modifier = Modifier.weight(1f)
                 )
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Note",
-                    modifier = Modifier
-                        .clickable(onClick = onDelete) // Trailing lambda for readability
-                        .padding(8.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Note",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                    IconButton(onClick = onClick) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Note",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
             }
         }
     }
 }
-
 @Composable
 fun NotePreview(note: String, modifier: Modifier = Modifier) {
     val (title, body) = extractTitleAndBody(note)
@@ -231,19 +272,23 @@ fun NotePreview(note: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = MaterialTheme.colorScheme.onSurface
         )
 
         if (body.isNotBlank()) {
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                thickness = 1.dp
+            )
             Text(
                 text = body,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
+                maxLines = 4,
+                minLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 4.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

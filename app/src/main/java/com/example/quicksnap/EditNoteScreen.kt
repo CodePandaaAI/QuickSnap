@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -41,7 +42,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
+fun EditNoteScreen(note: Note, onSave: (String) -> Unit, onBack: () -> Unit) {
     // 1. Use a more descriptive variable name.
     var currentNoteContent by remember { mutableStateOf(note.content) }
 
@@ -55,8 +56,12 @@ fun EditNoteScreen(note: Note, onSave: (String) -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        IconButton(onClick = {onBack()}) {
+                            Icon(painterResource(R.drawable.baseline_arrow_back_24),
+                                contentDescription = "Back button")
+                        }
                         Image(
-                            painter = painterResource(R.drawable.ic_snap),
+                            painter = painterResource(R.drawable.ic_notes),
                             contentDescription = "QuickSnap",
                             modifier = Modifier
                                 .size(40.dp) //3. Reduce the size to have a good looking AppBar

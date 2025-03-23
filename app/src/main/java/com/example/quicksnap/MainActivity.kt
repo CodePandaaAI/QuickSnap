@@ -70,6 +70,7 @@ fun QuickSnapApp(viewModel: NotesViewModel) {
             if (note != null) {
                 EditNoteScreen(
                     note = note,
+                    onBack = { navController.navigateUp() },
                     onSave = { updatedContent ->
                         Log.d("QuickSnapApp", "Note updated: $updatedContent")
                         viewModel.updateNote(note, updatedContent)
